@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title> Chat App</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"> -->
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+
+    body {
+      font-family: "Inter", sans-serif;
+      background: #f0f0f5;
+      color: #111827;
+    }
+
+    /* Chat container */
+    #chat-container {
+      background: #fdfdfd;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+    }
+
+    /* Sidebar */
+    #sidebar {
+      background: #65418a;
+      color: #fdfdfd;
+      border-right: 1px solid #3a3d41;
+    }
+    .user-item {
+      transition: all 0.3s ease;
+    }
+    .user-item:hover {
+      background: #3a3d41;
+    }
+    .active-chat {
+      background: #6a5acd !important;
+      color: #ffffff !important;
+    }
+
+    /* Status dot */
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      transition: all 0.3s ease;
+    }
+    .status-online {
+      background-color: #34d399;
+      animation: pulse 1.5s infinite;
+    }
+    .status-offline {
+      background-color: #9ca3af;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.4); opacity: 0.7; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Chat bubbles */
+    .chat-bubble {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .chat-bubble:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .sender-bubble {
+      background: linear-gradient(135deg, #6a5acd, #836fff);
+      color: #fff;
+    }
+    .receiver-bubble {
+      background: #e4e4e7;
+      color: #111827;
+    }
+
+    /* Input box */
+    #message-input {
+      background: #f3f3f4;
+      border: 1px solid #d1d5db;
+      color: #111827;
+      transition: all 0.3s ease;
+    }
+    #message-input:focus {
+      outline: none;
+      border-color: #6a5acd;
+      box-shadow: 0 0 0 3px rgba(106,90,205,0.2);
+    }
+
+    /* Send button */
+    .send-btn {
+      background: linear-gradient(135deg, #6a5acd, #836fff);
+      border-radius: 9999px;
+      color: #fff;
+      transition: all 0.3s ease;
+    }
+    .send-btn:hover {
+      transform: scale(1.05);
+    }
+
+    /* Avatar */
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #6a5acd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: #fff;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .avatar:hover {
+      transform: scale(1.1);
+    }
+
+    /* Scrollbar */
+    .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f5f6fa; }
+
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 sm:p-6">
+
+<div id="chat-container" class="w-full max-w-6xl h-[90vh] flex overflow-hidden">
+  <!-- Sidebar -->
+  <aside id="sidebar" class="w-full md:w-1/4 lg:w-1/5 flex flex-col">
+    <header class="p-4 border-b border-gray-700">
+      <h2 class="text-lg font-semibold text-gray-200">Users</h2>
+    </header>
+    <div id="user-list" class="flex-1 overflow-y-auto custom-scrollbar">
+      <% if (!allusers.length) { %>
+        <h3 class="p-3 text-gray-400">No Users</h3>
+      <% } %>
+      <% allusers.forEach(user => { %>
+      <div class="p-3 border-b border-gray-700 cursor-pointer flex items-center justify-between user-item"
+           data-id="<%= user._id %>" data-username="<%= user.name %>">
+        <div class="flex items-center gap-3">
+          <div class="avatar"><%= user.name[0].toUpperCase() %></div>
+          <span class="font-medium text-gray-200"><%= user.name %></span>
+        </div>
+        <span class="status-dot status-offline"></span>
+      </div>
+      <% }) %>
+    </div>
+  </aside>
+
+  <!-- Chat Main -->
+  <section id="chat-main" class="flex-1 flex flex-col hidden md:flex">
+    <header class="p-4 border-b border-gray-300 bg-gray-50 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <button id="back-button" class="md:hidden p-2 text-gray-500 hover:text-gray-700" onclick="closeChat()">←</button>
+        <h2 id="current-chat-user" class="text-lg font-semibold text-gray-800">
+          Select a user
+          <span id="current-chat-status" class="ml-2 text-sm font-medium text-gray-500">(offline)</span>
+        </h2>
+      </div>
+    </header>
+
+    <div id="messages-container" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-white"></div>
+
+    <footer class="p-4 border-t border-gray-300 bg-gray-50">
+      <div class="flex space-x-3">
+       
+         
+        <input type="text" placeholder="Type your message..." class="flex-1 p-3 rounded-full" id="message-input"/>
+        <button class="send-btn font-semibold py-3 px-6" onclick="sendMessage()">Send</button>
+      </div>
+    </footer>
+  </section>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const userId = "<%=userid%>";
+  let friendId = null;
+  const socket = io();
+  socket.emit("registerUser", userId);
+
+  const userList = document.querySelectorAll(".user-item");
+  const chatStatus = document.getElementById("current-chat-status");
+  const chatUserHeader = document.getElementById("current-chat-user");
+  const messagesContainer = document.getElementById("messages-container");
+  
+
+
+  let onlineUserIds = [];
+
+  function updateChatStatus() {
+    if (!friendId) return;
+    if (onlineUserIds.includes(friendId)) {
+      chatStatus.textContent = "(online)";
+      chatStatus.classList.remove("text-gray-500");
+      chatStatus.classList.add("text-green-500");
+    } else {
+      chatStatus.textContent = "(offline)";
+      chatStatus.classList.remove("text-green-500");
+      chatStatus.classList.add("text-gray-500");
+    }
+  }
+
+  socket.on("updateUserStatus", (users) => {
+    onlineUserIds = users;
+
+    userList.forEach(userEl => {
+      const id = userEl.dataset.id;
+      const statusDot = userEl.querySelector(".status-dot");
+      if (!statusDot) return;
+
+      if (onlineUserIds.includes(id)) {
+        statusDot.classList.remove("status-offline");
+        statusDot.classList.add("status-online");
+      } else {
+        statusDot.classList.remove("status-online");
+        statusDot.classList.add("status-offline");
+      }
+    });
+
+    updateChatStatus();
+  });
+
+  socket.on("message", (msg) => {
+    if (!friendId) return;
+    if (msg.senderId === userId) return;
+    if (msg.senderId === friendId) appendMessage(msg);
+  });
+
+  function openChat(username) {
+    if (!friendId) return;
+    fetch(`/chats/${friendId}`)
+      .then(res => res.json())
+      .then(response => {
+        messagesContainer.innerHTML = "";
+        const messages = response.data || [];
+        if (!messages.length) messagesContainer.innerHTML = "No messages yet";
+        messages.forEach(msg => appendMessage(msg));
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        chatUserHeader.firstChild.textContent = username + " ";
+      });
+  }
+
+  function appendMessage(msg) {
+    const div = document.createElement("div");
+    const isSender = msg.sender === userId;
+    div.className = `flex ${isSender ? "justify-end" : "justify-start"} chat-bubble`;
+    div.innerHTML = `
+      ${!isSender ? `<div class="avatar mr-2">${msg.senderName?.charAt(0).toUpperCase()||"?"}</div>` : ""}
+      <div class="max-w-xs lg:max-w-md p-3 ${isSender ? "sender-bubble rounded-tr-none" : "receiver-bubble rounded-tl-none"} rounded-xl shadow-sm">
+        <p>${msg.message}</p>
+        <span class="text-xs opacity-70 mt-1 block ${isSender ? "text-right" : "text-left"}">${new Date(msg.timestamp || Date.now()).toLocaleTimeString()}</span>
+      </div>
+    `;
+    messagesContainer.appendChild(div);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }
+
+  userList.forEach(item => {
+    item.addEventListener("click", function () {
+      userList.forEach(i => i.classList.remove("active-chat"));
+      this.classList.add("active-chat");
+      friendId = this.dataset.id;
+      updateChatStatus();
+     
+      openChat(this.dataset.username);
+    });
+  });
+
+  function sendMessage() {
+    const input = document.getElementById("message-input");
+    const content = input.value.trim();
+    if (!content || !friendId) return;
+    socket.emit("message", { senderId: userId, receiverId: friendId, message: content });
+    appendMessage({ sender: userId, senderName: "You", message: content, timestamp: Date.now() });
+    input.value = "";
+  }
+
+  function closeChat() {
+    const sidebar = document.getElementById("sidebar");
+    const chatMain = document.getElementById("chat-main");
+    if (window.innerWidth < 768) {
+      chatMain.classList.add("hidden");
+      sidebar.classList.remove("hidden");
+    }
+  }
+</script>
+</body>
+</html>

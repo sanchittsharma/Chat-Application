@@ -1,0 +1,2 @@
+Socket = particular user
+io=entire circuit
