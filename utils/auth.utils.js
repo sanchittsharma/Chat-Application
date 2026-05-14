@@ -1,17 +1,14 @@
-const jwt=require("jsonwebtoken")
-const {user}=require("../models/userModel")
-const sendResponse = require("./sendresponse.utils")
-const key='abc@abc'
-function setUser(users) {
-       return jwt.sign(
-      {
-        
-        name: users.name,
-      },
-      key,
-      { expiresIn: "1h" } // optional expiry
+const jwt = require("jsonwebtoken");
+
+function setUser(user) {
+    const key = process.env.JWT_SECRET || "abc@abc";
+    return jwt.sign(
+        {
+            name: user.name,
+        },
+        key,
+        { expiresIn: "1h" }
     );
-  }
+}
 
-
-module.exports=setUser
+module.exports = setUser;

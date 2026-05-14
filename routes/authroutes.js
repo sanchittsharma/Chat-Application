@@ -1,9 +1,12 @@
-const express=require("express")
-const router=express.Router()
-const {login,register}=require("../controllers/authController")
-
+const express = require("express");
+const router = express.Router();
+const { login, register, forgotPassword, resetPassword } = require("../controllers/authController");
 
 router.post("/login", login);
-router.post("/register",register)
+router.post("/register", register);
+router.post("/forgot-password", forgotPassword);
+router.get("/reset-password/:token", (req, res) => res.render("resetpage"));
+router.post("/reset-password/:token", resetPassword);
 
-module.exports=router
+module.exports = router;
+

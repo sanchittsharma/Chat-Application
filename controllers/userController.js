@@ -1,12 +1,13 @@
 const {user,chats}=require("../models/userModel")
 const sendresponse=require("../utils/sendresponse.utils")
-async function loadchats(req,res) {
-    const userid=req.user._id
+async function loadchats(req, res) {
+    const userid = req.user._id;
+    const username = req.user.name;
     const allusers = await user.find({ _id: { $ne: userid } });
 
-    return  res.render("chats",{allusers,userid})
-
+    return res.render("chats", { allusers, userid, username });
 }
+
 
 async function getmessage(req,res) {
     const friendId=req.params.friendid

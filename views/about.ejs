@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About Us - Connectly</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #080B14;
+      color: white;
+      min-height: 100vh;
+    }
+
+    .glass {
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .fade-in {
+      animation: fadeIn 0.8s ease-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="flex flex-col items-center justify-center p-6 md:p-12">
+
+  <nav class="w-full max-w-6xl flex justify-between items-center mb-16 fade-in">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center font-bold text-white italic shadow-lg shadow-indigo-900/40">C</div>
+      <span class="text-2xl font-bold tracking-tight text-white">Connectly</span>
+    </div>
+    <a href="/" class="px-6 py-2 rounded-xl border border-white/10 hover:bg-white/5 transition-all text-sm font-medium">Back to Login</a>
+  </nav>
+
+
+  <main class="w-full max-w-4xl space-y-20">
+    <!-- Hero Section -->
+    <section class="text-center space-y-6 fade-in">
+      <h1 class="text-5xl md:text-7xl font-black tracking-tighter leading-none">
+        Redefining <br/>
+        <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-400">Communication.</span>
+      </h1>
+      <p class="text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
+        Connectly is a next-generation real-time messaging platform built for speed, security, and beauty.
+      </p>
+    </section>
+
+    <!-- Features Grid -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-8 fade-in" style="animation-delay: 0.2s;">
+      <div class="glass p-8 rounded-3xl space-y-4">
+        <div class="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-400">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+        </div>
+        <h3 class="text-xl font-bold text-white">Real-time</h3>
+        <p class="text-slate-400 text-sm leading-relaxed">Powered by Socket.io for instantaneous message delivery with zero latency.</p>
+      </div>
+      <div class="glass p-8 rounded-3xl space-y-4">
+        <div class="w-12 h-12 bg-cyan-500/10 rounded-2xl flex items-center justify-center text-cyan-400">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+        </div>
+        <h3 class="text-xl font-bold text-white">Group Chat</h3>
+        <p class="text-slate-400 text-sm leading-relaxed">Create dynamic groups and collaborate with multiple users seamlessly.</p>
+      </div>
+      <div class="glass p-8 rounded-3xl space-y-4">
+        <div class="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-400">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+        </div>
+        <h3 class="text-xl font-bold text-white">Secure</h3>
+        <p class="text-slate-400 text-sm leading-relaxed">JWT-based authentication and secure password hashing with Bcrypt.</p>
+      </div>
+    </section>
+
+    <!-- Tech Stack Section -->
+    <section class="text-center space-y-10 fade-in" style="animation-delay: 0.4s;">
+      <h2 class="text-3xl font-bold text-white">Powered by Modern Tech</h2>
+      <div class="flex flex-wrap justify-center gap-6">
+        <span class="px-6 py-3 bg-white/5 rounded-2xl border border-white/5 text-slate-300 font-medium">Node.js</span>
+        <span class="px-6 py-3 bg-white/5 rounded-2xl border border-white/5 text-slate-300 font-medium">Express</span>
+        <span class="px-6 py-3 bg-white/5 rounded-2xl border border-white/5 text-slate-300 font-medium">MongoDB</span>
+        <span class="px-6 py-3 bg-white/5 rounded-2xl border border-white/5 text-slate-300 font-medium">Socket.io</span>
+        <span class="px-6 py-3 bg-white/5 rounded-2xl border border-white/5 text-slate-300 font-medium">EJS</span>
+        <span class="px-6 py-3 bg-white/5 rounded-2xl border border-white/5 text-slate-300 font-medium">Tailwind CSS</span>
+      </div>
+    </section>
+
+    <footer class="pt-20 text-center text-slate-500 text-sm fade-in" style="animation-delay: 0.6s;">
+      <p>&copy; 2026 Connectly Chat Application. Designed with excellence.</p>
+    </footer>
+  </main>
+
+</body>
+</html>

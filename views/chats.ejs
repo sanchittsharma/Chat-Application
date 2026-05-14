@@ -9,288 +9,487 @@
   <style>
     @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
+    :root {
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --bg-main: #020617;
+      --sidebar-bg: #0f172a;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
 
     body {
       font-family: "Inter", sans-serif;
-      background: #f0f0f5;
-      color: #111827;
+      background: var(--bg-main);
+      color: var(--text-main);
     }
 
-    /* Chat container */
-    #chat-container {
-      background: #fdfdfd;
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+    /* Glass Effects */
+    .glass-header {
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
-    /* Sidebar */
+
+    /* Sidebar Styling */
     #sidebar {
-      background: #65418a;
-      color: #fdfdfd;
-      border-right: 1px solid #3a3d41;
+      background: var(--sidebar-bg);
+      color: #e2e8f0;
     }
-    .user-item {
-      transition: all 0.3s ease;
+    .sidebar-item {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 12px;
+      margin: 4px 12px;
     }
-    .user-item:hover {
-      background: #3a3d41;
+    .sidebar-item:hover {
+      background: rgba(255, 255, 255, 0.05);
     }
     .active-chat {
-      background: #6a5acd !important;
-      color: #ffffff !important;
+      background: rgba(99, 102, 241, 0.2) !important;
+      color: #fff !important;
+      border-left: 4px solid var(--primary);
     }
 
-    /* Status dot */
-    .status-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      display: inline-block;
-      transition: all 0.3s ease;
-    }
-    .status-online {
-      background-color: #34d399;
-      animation: pulse 1.5s infinite;
-    }
-    .status-offline {
-      background-color: #9ca3af;
-    }
-    @keyframes pulse {
-      0% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.4); opacity: 0.7; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-
-    /* Chat bubbles */
+    /* Message Bubbles */
     .chat-bubble {
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .chat-bubble:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      max-width: 75%;
+      padding: 12px 16px;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
     .sender-bubble {
-      background: linear-gradient(135deg, #6a5acd, #836fff);
-      color: #fff;
+      background: var(--primary);
+      color: white;
+      border-radius: 18px 18px 2px 18px;
     }
     .receiver-bubble {
-      background: #e4e4e7;
-      color: #111827;
+      background: #1e293b;
+      color: #f8fafc;
+      border-radius: 18px 18px 18px 2px;
     }
 
-    /* Input box */
-    #message-input {
-      background: #f3f3f4;
-      border: 1px solid #d1d5db;
-      color: #111827;
-      transition: all 0.3s ease;
+    /* Custom Scrollbar */
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+
+    /* Animations */
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-    #message-input:focus {
-      outline: none;
-      border-color: #6a5acd;
-      box-shadow: 0 0 0 3px rgba(106,90,205,0.2);
+    .message-anim {
+      animation: slideIn 0.3s ease-out forwards;
     }
 
-    /* Send button */
-    .send-btn {
-      background: linear-gradient(135deg, #6a5acd, #836fff);
-      border-radius: 9999px;
-      color: #fff;
-      transition: all 0.3s ease;
+    .modal-glass {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
     }
-    .send-btn:hover {
-      transform: scale(1.05);
-    }
-
-    /* Avatar */
-    .avatar {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      background: #6a5acd;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 600;
-      color: #fff;
-      font-size: 16px;
-      transition: all 0.3s ease;
-    }
-
-    .avatar:hover {
-      transform: scale(1.1);
-    }
-
-    /* Scrollbar */
-    .custom-scrollbar::-webkit-scrollbar { width: 8px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: #f5f6fa; }
-
   </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4 sm:p-6">
+<body class="h-screen flex items-center justify-center overflow-hidden">
 
-<div id="chat-container" class="w-full max-w-6xl h-[90vh] flex overflow-hidden">
+<div id="chat-container" class="w-full h-full flex bg-white shadow-2xl overflow-hidden">
   <!-- Sidebar -->
-  <aside id="sidebar" class="w-full md:w-1/4 lg:w-1/5 flex flex-col">
-    <header class="p-4 border-b border-gray-700">
-      <h2 class="text-lg font-semibold text-gray-200">Users</h2>
-    </header>
-    <div id="user-list" class="flex-1 overflow-y-auto custom-scrollbar">
-      <% if (!allusers.length) { %>
-        <h3 class="p-3 text-gray-400">No Users</h3>
-      <% } %>
-      <% allusers.forEach(user => { %>
-      <div class="p-3 border-b border-gray-700 cursor-pointer flex items-center justify-between user-item"
-           data-id="<%= user._id %>" data-username="<%= user.name %>">
-        <div class="flex items-center gap-3">
-          <div class="avatar"><%= user.name[0].toUpperCase() %></div>
-          <span class="font-medium text-gray-200"><%= user.name %></span>
-        </div>
-        <span class="status-dot status-offline"></span>
-      </div>
-      <% }) %>
+  <aside id="sidebar" class="w-80 flex flex-col border-r border-slate-800">
+    <div class="p-6">
+      <h1 class="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+        <span class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center text-sm">C</span>
+        Connect
+      </h1>
     </div>
+
+    <div id="sidebar-content" class="flex-1 overflow-y-auto custom-scrollbar">
+      <!-- Users Section -->
+      <div class="px-6 py-2 flex items-center justify-between text-slate-400">
+        <span class="text-xs font-bold uppercase tracking-widest">Direct Messages</span>
+      </div>
+      <div id="user-list" class="mb-6">
+        <% if (!allusers.length) { %>
+          <p class="px-8 py-4 text-sm text-slate-500">No users found</p>
+        <% } %>
+        <% allusers.forEach(user => { %>
+        <div class="sidebar-item p-3 cursor-pointer flex items-center justify-between user-item group"
+             data-id="<%= user._id %>" data-username="<%= user.name %>" data-type="private" onclick="selectChat(this)">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center font-bold text-slate-300 group-hover:bg-indigo-500 transition-colors">
+              <%= user.name[0].toUpperCase() %>
+            </div>
+            <div>
+              <p class="font-medium text-sm text-slate-200"><%= user.name %></p>
+              <p class="text-[11px] text-slate-500">Available</p>
+            </div>
+          </div>
+          <span class="status-dot w-2 h-2 rounded-full bg-slate-500 ring-4 ring-slate-900"></span>
+        </div>
+        <% }) %>
+
+      </div>
+
+      <!-- Groups Section -->
+      <div class="px-6 py-2 flex items-center justify-between text-slate-400">
+        <span class="text-xs font-bold uppercase tracking-widest">Groups</span>
+        <button onclick="showCreateGroupModal()" class="p-1 hover:bg-slate-700 rounded-full transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+        </button>
+      </div>
+      <div id="group-list" class="space-y-1">
+        <!-- Loaded dynamically -->
+      </div>
+    </div>
+
+    <!-- User Profile Footer -->
+    <div class="p-4 bg-slate-900/50 border-t border-slate-800 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold uppercase">
+        <%= username[0].toUpperCase() %>
+      </div>
+      <div class="flex-1 overflow-hidden">
+        <p class="text-sm font-semibold text-white truncate"><%= username %></p>
+        <p class="text-xs text-green-400">Online</p>
+      </div>
+      <button onclick="location.href='/'" class="p-2 text-slate-400 hover:text-red-400 transition-colors" title="Logout">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+      </button>
+    </div>
+
   </aside>
 
-  <!-- Chat Main -->
-  <section id="chat-main" class="flex-1 flex flex-col hidden md:flex">
-    <header class="p-4 border-b border-gray-300 bg-gray-50 flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <button id="back-button" class="md:hidden p-2 text-gray-500 hover:text-gray-700" onclick="closeChat()">←</button>
-        <h2 id="current-chat-user" class="text-lg font-semibold text-gray-800">
-          Select a user
-          <span id="current-chat-status" class="ml-2 text-sm font-medium text-gray-500">(offline)</span>
-        </h2>
+  <!-- Chat Area -->
+  <section id="chat-main" class="flex-1 flex flex-col bg-[#020617]">
+    <header id="chat-header" class="glass-header h-20 px-8 flex items-center justify-between z-10 hidden">
+      <div class="flex items-center gap-4">
+        <div id="header-avatar" class="w-10 h-10 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">?</div>
+        <div>
+          <h2 id="current-chat-user" class="text-lg font-bold text-white leading-tight">Select a conversation</h2>
+          <p id="current-chat-status" class="text-xs text-slate-500">Please choose a chat to start messaging</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button class="p-2 text-slate-400 hover:text-indigo-600 transition-colors rounded-full hover:bg-slate-100">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </button>
       </div>
     </header>
 
-    <div id="messages-container" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-white"></div>
+    <!-- Empty State -->
+    <div id="empty-state" class="flex-1 flex flex-col items-center justify-center text-center p-12">
+      <div class="w-24 h-24 bg-indigo-50 rounded-3xl flex items-center justify-center mb-6">
+        <svg class="w-12 h-12 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+      </div>
+      <h3 class="text-2xl font-bold text-slate-800 mb-2">Welcome to Connect</h3>
+      <p class="text-slate-500 max-w-sm">Pick a user or group from the left to begin your conversation. Real-time, secure, and beautiful.</p>
+    </div>
 
-    <footer class="p-4 border-t border-gray-300 bg-gray-50">
-      <div class="flex space-x-3">
-       
-         
-        <input type="text" placeholder="Type your message..." class="flex-1 p-3 rounded-full" id="message-input"/>
-        <button class="send-btn font-semibold py-3 px-6" onclick="sendMessage()">Send</button>
+    <div id="messages-container" class="flex-1 overflow-y-auto p-8 space-y-6 bg-slate-50/30 hidden">
+      <!-- Messages load here -->
+    </div>
+
+    <!-- Message Input -->
+    <footer id="chat-footer" class="p-6 bg-[#020617] border-t border-white/5 hidden">
+      <div class="max-w-4xl mx-auto flex items-center gap-4 bg-slate-900/50 p-2 rounded-2xl focus-within:ring-2 focus-within:ring-blue-500 transition-all border border-white/5">
+        <button class="p-2 text-slate-400 hover:text-blue-400 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        </button>
+        <input type="text" id="message-input" placeholder="Type something beautiful..." 
+               class="flex-1 bg-transparent border-none outline-none text-white py-2 placeholder-slate-500 font-medium"/>
+        <button onclick="sendMessage()" class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-xl shadow-lg shadow-blue-900/20 transition-all active:scale-95">
+          <svg class="w-5 h-5 transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+        </button>
       </div>
     </footer>
   </section>
 </div>
 
+<!-- Modern Create Group Modal -->
+<div id="create-group-modal" class="fixed inset-0 bg-black/80 z-50 hidden items-center justify-center p-4 backdrop-blur-sm">
+  <div class="bg-slate-900 border border-white/5 rounded-3xl p-8 w-full max-w-md shadow-2xl message-anim">
+    <div class="flex justify-between items-center mb-8">
+      <div>
+        <h2 class="text-2xl font-bold text-white">Create Group</h2>
+        <p class="text-sm text-slate-400">Bring people together</p>
+      </div>
+      <button onclick="hideCreateGroupModal()" class="w-10 h-10 flex items-center justify-center bg-white/5 text-slate-400 hover:text-white rounded-full transition-colors">&times;</button>
+    </div>
+    <div class="space-y-6">
+      <div>
+        <label class="block text-sm font-semibold text-slate-300 mb-2 ml-1">Group Identity</label>
+        <input type="text" id="group-name-input" class="w-full p-4 bg-slate-800 border border-white/5 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 text-white transition-all placeholder-slate-500" placeholder="Team Superstars">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-300 mb-2 ml-1">Members</label>
+        <div class="max-h-56 overflow-y-auto custom-scrollbar pr-2 space-y-2">
+          <% allusers.forEach(user => { %>
+            <label class="flex items-center justify-between p-3 bg-white/5 hover:bg-blue-600/20 rounded-2xl cursor-pointer transition-colors group">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
+                  <%= user.name[0].toUpperCase() %>
+                </div>
+                <span class="text-slate-200 font-medium"><%= user.name %></span>
+              </div>
+              <input type="checkbox" name="group-members" value="<%= user._id %>" class="w-5 h-5 rounded-md border-white/10 bg-slate-800 text-blue-600 focus:ring-blue-500">
+            </label>
+          <% }) %>
+        </div>
+      </div>
+      <button onclick="submitCreateGroup()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl shadow-xl shadow-blue-900/20 transition-all active:scale-95 mt-4">
+        Launch Group
+      </button>
+    </div>
+  </div>
+</div>
+
+
+
 <script src="/socket.io/socket.io.js"></script>
 <script>
   const userId = "<%=userid%>";
   let friendId = null;
+  let currentGroupId = null;
   const socket = io();
   socket.emit("registerUser", userId);
 
-  const userList = document.querySelectorAll(".user-item");
+  // Load Groups and join their rooms
+  function loadGroups() {
+    fetch('/groups')
+      .then(res => res.json())
+      .then(response => {
+        const groups = response.data || [];
+        const groupListContainer = document.getElementById("group-list");
+        groupListContainer.innerHTML = "";
+        
+        groups.forEach(grp => {
+          socket.emit("joinGroup", grp._id);
+          const div = document.createElement("div");
+          div.className = "sidebar-item p-3 cursor-pointer flex items-center gap-3 user-item group";
+          div.dataset.id = grp._id;
+          div.dataset.username = grp.name;
+          div.dataset.type = "group";
+          div.innerHTML = `
+            <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center font-bold text-slate-300 group-hover:bg-indigo-500 transition-colors">
+              ${grp.name[0].toUpperCase()}
+            </div>
+            <div>
+              <p class="font-medium text-sm text-slate-200">${grp.name}</p>
+              <p class="text-[11px] text-slate-500">Group Chat</p>
+            </div>
+          `;
+          div.onclick = () => selectChat(div);
+          groupListContainer.appendChild(div);
+        });
+      });
+  }
+  loadGroups();
+
+  function showCreateGroupModal() {
+    document.getElementById("create-group-modal").classList.remove("hidden");
+    document.getElementById("create-group-modal").classList.add("flex");
+  }
+
+  function hideCreateGroupModal() {
+    document.getElementById("create-group-modal").classList.remove("flex");
+    document.getElementById("create-group-modal").classList.add("hidden");
+  }
+
+  function submitCreateGroup() {
+    const name = document.getElementById("group-name-input").value.trim();
+    const members = Array.from(document.querySelectorAll('input[name="group-members"]:checked')).map(cb => cb.value);
+    
+    if (!name || members.length === 0) return alert("Name and at least one participant required");
+
+    fetch('/groups', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, members })
+    })
+    .then(res => res.json())
+    .then(response => {
+      if (response.success) {
+        hideCreateGroupModal();
+        loadGroups();
+      } else {
+        alert(response.message);
+      }
+    });
+  }
+
   const chatStatus = document.getElementById("current-chat-status");
   const chatUserHeader = document.getElementById("current-chat-user");
   const messagesContainer = document.getElementById("messages-container");
-  
-
+  const headerAvatar = document.getElementById("header-avatar");
 
   let onlineUserIds = [];
 
   function updateChatStatus() {
+    if (currentGroupId) {
+      chatStatus.textContent = "Multi-user Conversation";
+      chatStatus.classList.remove("text-green-500");
+      chatStatus.classList.add("text-slate-400");
+      return;
+    }
     if (!friendId) return;
     if (onlineUserIds.includes(friendId)) {
-      chatStatus.textContent = "(online)";
-      chatStatus.classList.remove("text-gray-500");
+      chatStatus.textContent = "Online";
+      chatStatus.classList.remove("text-slate-400");
       chatStatus.classList.add("text-green-500");
     } else {
-      chatStatus.textContent = "(offline)";
+      chatStatus.textContent = "Offline";
       chatStatus.classList.remove("text-green-500");
-      chatStatus.classList.add("text-gray-500");
+      chatStatus.classList.add("text-slate-400");
     }
   }
 
   socket.on("updateUserStatus", (users) => {
     onlineUserIds = users;
-
-    userList.forEach(userEl => {
+    document.querySelectorAll(".user-item[data-type='private']").forEach(userEl => {
       const id = userEl.dataset.id;
       const statusDot = userEl.querySelector(".status-dot");
       if (!statusDot) return;
-
       if (onlineUserIds.includes(id)) {
-        statusDot.classList.remove("status-offline");
-        statusDot.classList.add("status-online");
+        statusDot.classList.remove("bg-slate-500");
+        statusDot.classList.add("bg-green-500");
       } else {
-        statusDot.classList.remove("status-online");
-        statusDot.classList.add("status-offline");
+        statusDot.classList.remove("bg-green-500");
+        statusDot.classList.add("bg-slate-500");
       }
     });
-
     updateChatStatus();
   });
 
   socket.on("message", (msg) => {
-    if (!friendId) return;
     if (msg.senderId === userId) return;
-    if (msg.senderId === friendId) appendMessage(msg);
+    if (msg.groupId && msg.groupId === currentGroupId) {
+      appendMessage(msg);
+    } else if (msg.senderId === friendId) {
+      appendMessage(msg);
+    }
   });
+
+  function selectChat(element) {
+    document.querySelectorAll(".sidebar-item").forEach(i => i.classList.remove("active-chat"));
+    element.classList.add("active-chat");
+    
+    // Show UI elements
+    document.getElementById("empty-state").classList.add("hidden");
+    document.getElementById("chat-header").classList.remove("hidden");
+    document.getElementById("messages-container").classList.remove("hidden");
+    document.getElementById("chat-footer").classList.remove("hidden");
+
+    const type = element.dataset.type;
+    const id = element.dataset.id;
+    const name = element.dataset.username;
+
+    headerAvatar.textContent = name[0].toUpperCase();
+    if (type === "group") {
+      headerAvatar.className = "w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold";
+      currentGroupId = id;
+      friendId = null;
+      openGroupChat(id, name);
+    } else {
+      headerAvatar.className = "w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold";
+      friendId = id;
+      currentGroupId = null;
+      openChat(name);
+    }
+    updateChatStatus();
+  }
+
+  function openGroupChat(id, name) {
+    messagesContainer.innerHTML = "<div class='flex justify-center'><div class='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600'></div></div>";
+    fetch(`/groups/${id}/messages`)
+      .then(res => res.json())
+      .then(response => {
+        messagesContainer.innerHTML = "";
+        const messages = response.data || [];
+        if (!messages.length) {
+          messagesContainer.innerHTML = `<div id="no-messages-placeholder" class='flex flex-col items-center justify-center h-full text-slate-500 opacity-50'>
+            <svg class="w-12 h-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+            <p>Start the conversation!</p>
+          </div>`;
+        }
+        messages.forEach(msg => {
+          appendMessage({
+            sender: msg.sender._id,
+            senderName: msg.sender.name,
+            message: msg.message,
+            timestamp: msg.timestamp
+          });
+        });
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        chatUserHeader.textContent = name;
+      });
+  }
 
   function openChat(username) {
     if (!friendId) return;
+    messagesContainer.innerHTML = "<div class='flex justify-center'><div class='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600'></div></div>";
     fetch(`/chats/${friendId}`)
       .then(res => res.json())
       .then(response => {
         messagesContainer.innerHTML = "";
         const messages = response.data || [];
-        if (!messages.length) messagesContainer.innerHTML = "No messages yet";
+        if (!messages.length) {
+          messagesContainer.innerHTML = `<div id="no-messages-placeholder" class='flex flex-col items-center justify-center h-full text-slate-500 opacity-50'>
+            <svg class="w-12 h-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+            <p>No messages yet</p>
+          </div>`;
+        }
         messages.forEach(msg => appendMessage(msg));
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        chatUserHeader.firstChild.textContent = username + " ";
+        chatUserHeader.textContent = username;
       });
   }
 
   function appendMessage(msg) {
+    // Remove placeholder if it exists
+    const placeholder = document.getElementById("no-messages-placeholder");
+    if (placeholder) placeholder.remove();
+
     const div = document.createElement("div");
     const isSender = msg.sender === userId;
-    div.className = `flex ${isSender ? "justify-end" : "justify-start"} chat-bubble`;
+    div.className = `flex ${isSender ? "justify-end" : "justify-start"} message-anim`;
     div.innerHTML = `
-      ${!isSender ? `<div class="avatar mr-2">${msg.senderName?.charAt(0).toUpperCase()||"?"}</div>` : ""}
-      <div class="max-w-xs lg:max-w-md p-3 ${isSender ? "sender-bubble rounded-tr-none" : "receiver-bubble rounded-tl-none"} rounded-xl shadow-sm">
-        <p>${msg.message}</p>
-        <span class="text-xs opacity-70 mt-1 block ${isSender ? "text-right" : "text-left"}">${new Date(msg.timestamp || Date.now()).toLocaleTimeString()}</span>
+      <div class="flex flex-col ${isSender ? "items-end" : "items-start"} max-w-[80%]">
+        ${!isSender && currentGroupId ? `<span class="text-[10px] font-bold text-slate-400 mb-1 ml-2 uppercase tracking-widest">${msg.senderName}</span>` : ""}
+        <div class="chat-bubble ${isSender ? "sender-bubble" : "receiver-bubble"}">
+          <p class="whitespace-pre-wrap">${msg.message}</p>
+        </div>
+        <span class="text-[10px] text-slate-400 mt-1 mx-2">${new Date(msg.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
       </div>
     `;
     messagesContainer.appendChild(div);
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
   }
 
-  userList.forEach(item => {
-    item.addEventListener("click", function () {
-      userList.forEach(i => i.classList.remove("active-chat"));
-      this.classList.add("active-chat");
-      friendId = this.dataset.id;
-      updateChatStatus();
-     
-      openChat(this.dataset.username);
-    });
-  });
-
   function sendMessage() {
     const input = document.getElementById("message-input");
     const content = input.value.trim();
-    if (!content || !friendId) return;
-    socket.emit("message", { senderId: userId, receiverId: friendId, message: content });
+    if (!content) return;
+    if (!friendId && !currentGroupId) return;
+
+    const data = { 
+      senderId: userId, 
+      message: content,
+      timestamp: Date.now()
+    };
+
+    if (currentGroupId) {
+      data.groupId = currentGroupId;
+    } else {
+      data.receiverId = friendId;
+    }
+
+    socket.emit("message", data);
     appendMessage({ sender: userId, senderName: "You", message: content, timestamp: Date.now() });
     input.value = "";
   }
 
-  function closeChat() {
-    const sidebar = document.getElementById("sidebar");
-    const chatMain = document.getElementById("chat-main");
-    if (window.innerWidth < 768) {
-      chatMain.classList.add("hidden");
-      sidebar.classList.remove("hidden");
-    }
-  }
+  // Handle Enter Key
+  document.getElementById("message-input").addEventListener("keypress", (e) => {
+    if (e.key === "Enter") sendMessage();
+  });
 </script>
 </body>
 </html>
